@@ -7,6 +7,8 @@ import {
   deletePost,
   getAllPosts,
   toggleLikePost,
+  editPost,
+   editComment,
 } from "../api/postApi";
 
 import { getUserPosts } from "../api/socialApi";
@@ -65,6 +67,30 @@ export function useDeletePost() {
       });
     },
   });
+}
+export function useEditPost() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: editPost,
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["posts"],
+      });
+    },
+  });
+}
+export function useEditComment(){
+  const queryClient =useQueryClient ();
+
+  return useMutation ({
+    mutationFn : editComment, 
+    onSuccess : () =>{
+      queryClient.invalidateQueries({
+        queryKey: ["posts"],
+      })
+    }
+  })
 }
 
 export function useToggleLikePost(currentUserId?: string) {
