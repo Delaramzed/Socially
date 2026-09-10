@@ -8,6 +8,8 @@ import {
   useDeleteComment,
   useDeletePost,
   useToggleLikePost,
+  useEditPost,
+  useEditComment,
 } from "../../hooks/usePost";
 
 import { useSession } from "../../hooks/useSession";
@@ -26,6 +28,8 @@ function PostCard({ post }: PostCardProps) {
   const [showComments, setShowComments] = useState(false);
   const [showDeletePostModal, setShowDeletePostModal] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
+  const [isEditingPost, setIsEditingPost] = useState(false);
+  const [editedContent, setEditedContent] = useState(post.content);
 
   const [postImageError, setPostImageError] = useState(false);
 
@@ -47,6 +51,8 @@ function PostCard({ post }: PostCardProps) {
     useCreateComment(currentUser);
 
   const { mutate: deletePost, isPending: isDeletePending } = useDeletePost();
+
+  const { mutate: editPost, isPending: isEditPending } = useEditPost();
 
   const { mutate: deleteComment, isPending: isDeleteCommentPending } =
     useDeleteComment();
@@ -109,6 +115,28 @@ function PostCard({ post }: PostCardProps) {
     });
   }
 
+  function handleEditPost() {
+    setIsEditingPost(true);
+  }
+
+  function handleSaveEdit() {
+    const trimmedContent = editedContent.trim();
+
+    if (!trimmedContent) return;
+
+    editPost(
+      {
+        postId: post.id,
+        content: trimmedContent,
+      },
+      {
+        onSuccess: () => {
+          setIsEditingPost(false);
+        },
+      },
+    );
+  }
+
   return (
     <>
       <article className="border-base-300 bg-base-100 w-[550px] max-w-full rounded-xl border p-6 shadow-sm">
@@ -156,9 +184,39 @@ function PostCard({ post }: PostCardProps) {
               </span>
             </div>
 
-            <p className="text-base-content mt-1 text-sm break-words">
-              {post.content}
-            </p>
+            {isEditingPost ? (
+              <div className="mt-2">
+                <textarea
+                  value={editedContent}
+                  onChange={(event) => setEditedContent(event.target.value)}
+                  className="border-base-300 text-base-content w-full resize-none rounded-md border bg-transparent p-3 text-sm outline-none focus:outline-none"
+                  rows={3}
+                />
+
+                <div className="mt-2 flex justify-end gap-2">
+                  <Button
+                    onClick={() => {
+                      setIsEditingPost(false);
+                      setEditedContent(post.content);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+
+                  <Button
+                    onClick={handleSaveEdit}
+                    loading={isEditPending}
+                    disabled={!editedContent.trim() || isEditPending}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-base-content mt-1 text-sm break-words">
+                {post.content}
+              </p>
+            )}
 
             {postImageUrl && (
               <img
@@ -170,17 +228,27 @@ function PostCard({ post }: PostCardProps) {
           </div>
 
           {isOwner && (
-            <button
-              type="button"
-              onClick={() => setShowDeletePostModal(true)}
-              className="text-base-content/60 hover:text-error shrink-0 cursor-pointer"
-              aria-label="Delete post"
-            >
-              <TrashIcon className="h-4 w-4" />
-            </button>
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                onClick={handleEditPost}
+                className="text-base-content/60 hover:text-primary cursor-pointer"
+                aria-label="Edit post"
+              >
+                Edit
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowDeletePostModal(true)}
+                className="text-base-content/60 hover:text-error cursor-pointer"
+                aria-label="Delete post"
+              >
+                <TrashIcon className="h-4 w-4" />
+              </button>
+            </div>
           )}
         </div>
-
         <div className="mt-4 flex h-8 items-center gap-4">
           {/* Like */}
           <button
@@ -240,6 +308,7 @@ function PostCard({ post }: PostCardProps) {
                   <CommentItem
                     key={postComment.id}
                     comment={postComment}
+                    postId={post.id}
                     currentUserId={currentUserId}
                     currentUserEmail={currentUserEmail}
                     onNavigate={
@@ -305,6 +374,7 @@ function PostCard({ post }: PostCardProps) {
 
 type CommentItemProps = {
   comment: PostCardProps["post"]["comments"][number];
+  postId: string;
   currentUserId?: string;
   currentUserEmail?: string;
   onNavigate?: () => void;
@@ -313,12 +383,20 @@ type CommentItemProps = {
 
 function CommentItem({
   comment,
+  postId,
   currentUserId,
   currentUserEmail,
   onNavigate,
   onDelete,
 }: CommentItemProps) {
   const [imageError, setImageError] = useState(false);
+  const [isEditingComment, setIsEditingComment] = useState(false);
+  const [editedCommentContent, setEditedCommentContent] = useState(
+    comment.content,
+  );
+
+  const { mutate: editComment, isPending: isEditCommentPending } =
+    useEditComment();
   const author = comment.author ?? {
     id: "",
     name: "Unknown user",
@@ -331,6 +409,25 @@ function CommentItem({
   const isCommentOwner =
     author.id === currentUserId || author.email === currentUserEmail;
   const isTemporaryComment = comment.id.startsWith("temp-");
+
+  function handleSaveEditComment() {
+    const trimmedContent = editedCommentContent.trim();
+
+    if (!trimmedContent) return;
+
+    editComment(
+      {
+        postId,
+        commentId: comment.id,
+        content: trimmedContent,
+      },
+      {
+        onSuccess: () => {
+          setIsEditingComment(false);
+        },
+      },
+    );
+  }
 
   return (
     <div className="flex items-start gap-3">
@@ -377,20 +474,60 @@ function CommentItem({
           </span>
         </div>
 
-        <p className="text-base-content/80 mt-1 text-sm break-words">
-          {comment.content}
-        </p>
+        {isEditingComment ? (
+          <div className="mt-2">
+            <textarea
+              value={editedCommentContent}
+              onChange={(e) => setEditedCommentContent(e.target.value)}
+              className="border-base-300 text-base-content w-full resize-none rounded-md border bg-transparent p-2 text-sm outline-none"
+              rows={2}
+            />
+
+            <div className="mt-2 flex justify-end gap-2">
+              <Button
+                onClick={() => {
+                  setIsEditingComment(false);
+                  setEditedCommentContent(comment.content);
+                }}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                onClick={handleSaveEditComment}
+                loading={isEditCommentPending}
+                disabled={!editedCommentContent.trim() || isEditCommentPending}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-base-content/80 mt-1 text-sm break-words">
+            {comment.content}
+          </p>
+        )}
       </div>
 
       {isCommentOwner && !isTemporaryComment && (
-        <button
-          type="button"
-          onClick={() => onDelete(comment.id)}
-          className="text-base-content/50 hover:text-error flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
-          aria-label="Delete comment"
-        >
-          <TrashIcon className="h-4 w-4" />
-        </button>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setIsEditingComment(true)}
+            className="text-base-content/50 hover:text-primary rounded-md px-2 text-xs"
+            aria-label="Edit comment"
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={() => onDelete(comment.id)}
+            className="text-base-content/50 hover:text-error flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
+            aria-label="Delete comment"
+          >
+            <TrashIcon className="h-4 w-4" />
+          </button>
+        </div>
       )}
     </div>
   );

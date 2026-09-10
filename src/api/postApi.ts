@@ -69,3 +69,36 @@ export const deleteComment = async ({
 
   return response.data;
 };
+
+export const editPost = async ({
+  postId,
+  content,
+}: {
+  postId: string;
+  content: string;
+}) => {
+  const response = await api.patch(`/api/posts/${postId}`, {
+    content,
+  });
+
+  return response.data;
+};
+
+export const editComment = async ({
+  postId,
+  commentId,
+  content,
+}: {
+  postId: string;
+  commentId: string;
+  content: string;
+}) => {
+  const response = await api.patch(
+    `/api/posts/${postId}/comment/${commentId}`,
+    {
+      content,
+    },
+  );
+
+  return response.data;
+};
