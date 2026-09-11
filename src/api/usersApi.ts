@@ -30,3 +30,12 @@ export const searchUsers = async (search: string) => {
 
   return response.data.data;
 };
+export const getFollowers = async (id: string) => {
+  const response = await api.get(`/api/users/${id}/followers`);
+  return response.data.data;
+};
+
+export const getFollowing = async (id: string) => {
+  const response = await api.get(`/api/users/${id}/following`);
+  return response.data.data;
+};

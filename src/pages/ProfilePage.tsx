@@ -22,12 +22,18 @@ import {
   UserProfileCardSkeleton,
   PostsLikesTabsSkeleton,
 } from "../components/ui/Skeleton";
+import FollowListModal from "../components/modals/FollowListModal";
+import { useFollowers } from "../hooks/useFollowers";
+import { useFollowing } from "../hooks/useFollowing";
 
 function Profile() {
   const { id } = useParams();
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [section, setSection] = useState<"posts" | "likes">("posts");
+  const [followList, setFollowList] = useState<
+    "followers" | "following" | null
+  >(null);
 
   const { data: session } = useSession();
 
@@ -59,6 +65,15 @@ function Profile() {
     );
   }
 
+  const { data: followers = [], isLoading: isFollowersLoading } = useFollowers(
+    id ?? "",
+  );
+
+  const { data: following = [], isLoading: isFollowingLoading } = useFollowing(
+    id ?? "",
+  );
+  console.log("FOLLOWING:", following);
+
   return (
     <Container>
       <div className="col-span-5 flex flex-col gap-6 md:col-span-3">
@@ -74,6 +89,8 @@ function Profile() {
             isFollowLoading={followMutation.isPending}
             onEditClick={() => setShowEditModal(true)}
             onFollowClick={() => followMutation.mutate()}
+            onFollowersClick={() => setFollowList("followers")}
+            onFollowingClick={() => setFollowList("following")}
           />
         )}
 
@@ -166,6 +183,23 @@ function Profile() {
               onSuccess: () => setShowEditModal(false),
             });
           }}
+        />
+      )}
+      {followList === "followers" && (
+        <FollowListModal
+          title="Followers"
+          users={followers.map((item: { follower: any }) => item.follower)}
+          isLoading={isFollowersLoading}
+          onClose={() => setFollowList(null)}
+        />
+      )}
+
+      {followList === "following" && (
+        <FollowListModal
+          title="Following"
+          users={following.map((item) => item.following)}
+          isLoading={isFollowingLoading}
+          onClose={() => setFollowList(null)}
         />
       )}
     </Container>
