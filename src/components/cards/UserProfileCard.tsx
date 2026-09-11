@@ -10,6 +10,8 @@ type UserProfileCardProps = {
   isFollowLoading?: boolean;
   onEditClick?: () => void;
   onFollowClick?: () => void;
+  onFollowersClick?: () => void;
+  onFollowingClick?: () => void;
 };
 
 function formatJoinDate(date: string) {
@@ -26,6 +28,8 @@ function UserProfileCard({
   isFollowLoading = false,
   onEditClick,
   onFollowClick,
+  onFollowersClick,
+  onFollowingClick,
 }: UserProfileCardProps) {
   const avatarLetter = user.name?.charAt(0).toUpperCase() || "U";
 
@@ -63,26 +67,39 @@ function UserProfileCard({
         <p className="text-base-content-secondary text-sm">{user.email}</p>
 
         <div className="mt-6 grid w-full grid-cols-3 gap-4">
-          <div className="flex flex-col items-center">
+          <button
+            type="button"
+            onClick={onFollowingClick}
+            className="flex cursor-pointer flex-col items-center border-0 bg-transparent p-0"
+          >
             <span className="text-base-content font-bold">
               {user._count?.followings ?? 0}
             </span>
+
             <span className="text-base-content-secondary text-sm">
               Following
             </span>
-          </div>
-          <div className="flex flex-col items-center">
+          </button>
+
+          <button
+            type="button"
+            onClick={onFollowersClick}
+            className="flex cursor-pointer flex-col items-center border-0 bg-transparent p-0"
+          >
             <span className="text-base-content font-bold">
               {user._count?.followers ?? 0}
             </span>
+
             <span className="text-base-content-secondary text-sm">
               Followers
             </span>
-          </div>
+          </button>
+
           <div className="flex flex-col items-center">
             <span className="text-base-content font-bold">
               {user._count?.posts ?? 0}
             </span>
+
             <span className="text-base-content-secondary text-sm">Posts</span>
           </div>
         </div>
