@@ -2,10 +2,13 @@ import { ChatIcon, HeartIcon } from "../../assets/icons";
 import { UserRoundPlus } from "lucide-react";
 import type { SocialNotification } from "../../types/notification";
 import { Link } from "react-router-dom";
+ import {TrashIcon} from "../../assets/icons"
+
 
 interface NotificationCardProps {
   notification: SocialNotification;
   onMarkAsRead?: () => void;
+  onDelete?: () => void;
 }
 
 function NotificationCard(props: NotificationCardProps) {
@@ -75,9 +78,22 @@ function NotificationCard(props: NotificationCardProps) {
           {notification.createdAt}
         </p>
       </div>
-      {!notification.isRead && (
-        <span className="bg-primary absolute top-6 right-4 h-2 w-2 rounded-full" />
-      )}
+     <div className="absolute top-5 right-4 flex items-center gap-3">
+  {!notification.isRead && (
+    <span className="bg-primary h-2 w-2 rounded-full" />
+  )}
+
+  <button
+    type="button"
+    onClick={(e) => {
+      e.stopPropagation();
+      props.onDelete?.();
+    }}
+    className="text-base-content/50 hover:text-error transition-colors"
+  >
+    <TrashIcon className="h-4 w-4" />
+  </button>
+</div>
     </section>
   );
 }
