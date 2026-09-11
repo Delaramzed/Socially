@@ -34,6 +34,11 @@ function UserProfileCard({
   const avatarLetter = user.name?.charAt(0).toUpperCase() || "U";
 
   const [localFollowing, setLocalFollowing] = useState(isFollowing);
+
+  const handleFollowClick = () => {
+    onFollowClick?.();
+    setLocalFollowing((prev) => !prev);
+  };
   const followerCountRef = useRef(user._count?.followers ?? 0);
 
   useEffect(() => {
@@ -119,7 +124,7 @@ function UserProfileCard({
             <Button
               variant={localFollowing ? "secondary" : "primary"}
               size="md"
-              onClick={onFollowClick}
+              onClick={handleFollowClick}
               disabled={isFollowLoading}
               loading={isFollowLoading}
               className="w-full"
