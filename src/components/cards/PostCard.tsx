@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { ChatIcon, HeartIcon, SendIcon, TrashIcon } from "../../assets/icons";
+import {
+  ChatIcon,
+  HeartIcon,
+  SendIcon,
+  TrashIcon,
+  EditIcon,
+} from "../../assets/icons";
 
 import {
   useCreateComment,
@@ -16,8 +22,6 @@ import { useSession } from "../../hooks/useSession";
 import type { PostCardProps } from "../../types/post.types";
 import { formatTimeAgo } from "../../utils/formatTimeAgo";
 
-import Button from "../ui/Button";
-
 import { getImageUrl } from "../../lib/getImageUrl";
 
 import DeleteCommentModal from "../modals/DeleteCommentModal";
@@ -25,6 +29,7 @@ import DeletePostModal from "../modals/DeletePostModal";
 
 function PostCard({ post }: PostCardProps) {
   const [comment, setComment] = useState("");
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [showComments, setShowComments] = useState(false);
   const [showDeletePostModal, setShowDeletePostModal] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
@@ -53,6 +58,8 @@ function PostCard({ post }: PostCardProps) {
   const { mutate: deletePost, isPending: isDeletePending } = useDeletePost();
 
   const { mutate: editPost, isPending: isEditPending } = useEditPost();
+  const { mutate: editComment, isPending: isEditCommentPending } =
+    useEditComment();
 
   const { mutate: deleteComment, isPending: isDeleteCommentPending } =
     useDeleteComment();
@@ -62,8 +69,6 @@ function PostCard({ post }: PostCardProps) {
   const isLiked = Boolean(
     currentUserId && post.likes?.some((like) => like.userId === currentUserId),
   );
-
-  const isCommentDisabled = comment.trim().length < 5 || isCommentPending;
 
   const avatarLetter = post.author.name?.charAt(0).toUpperCase() || "U";
 
@@ -93,6 +98,44 @@ function PostCard({ post }: PostCardProps) {
     );
   }
 
+  function handleEditComment(
+    commentItem: PostCardProps["post"]["comments"][number],
+  ) {
+    if (editingCommentId === commentItem.id) {
+      const trimmedComment = comment.trim();
+
+      console.log("SENDING EDIT", {
+        postId: post.id,
+        commentId: commentItem.id,
+        content: trimmedComment,
+      });
+
+      if (!trimmedComment) return;
+
+      editComment(
+        {
+          postId: post.id,
+          commentId: commentItem.id,
+          content: trimmedComment,
+        },
+        {
+          onSuccess: () => {
+            console.log("EDIT SUCCESS");
+            setComment("");
+            setEditingCommentId(null);
+          },
+          onError: (error) => {
+            console.log("EDIT ERROR", error);
+          },
+        },
+      );
+
+      return;
+    }
+
+    setEditingCommentId(commentItem.id);
+    setComment(commentItem.content);
+  }
   function handleDeletePost() {
     if (!isOwner) return;
 
@@ -185,33 +228,12 @@ function PostCard({ post }: PostCardProps) {
             </div>
 
             {isEditingPost ? (
-              <div className="mt-2">
-                <textarea
-                  value={editedContent}
-                  onChange={(event) => setEditedContent(event.target.value)}
-                  className="border-base-300 text-base-content w-full resize-none rounded-md border bg-transparent p-3 text-sm outline-none focus:outline-none"
-                  rows={3}
-                />
-
-                <div className="mt-2 flex justify-end gap-2">
-                  <Button
-                    onClick={() => {
-                      setIsEditingPost(false);
-                      setEditedContent(post.content);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-
-                  <Button
-                    onClick={handleSaveEdit}
-                    loading={isEditPending}
-                    disabled={!editedContent.trim() || isEditPending}
-                  >
-                    Save
-                  </Button>
-                </div>
-              </div>
+              <textarea
+                value={editedContent}
+                onChange={(event) => setEditedContent(event.target.value)}
+                className="border-base-300 text-base-content mt-2 w-full resize-none rounded-md border bg-transparent p-3 text-sm outline-none focus:outline-none"
+                rows={3}
+              />
             ) : (
               <p className="text-base-content mt-1 text-sm break-words">
                 {post.content}
@@ -231,13 +253,19 @@ function PostCard({ post }: PostCardProps) {
             <div className="flex shrink-0 items-center gap-1">
               <button
                 type="button"
-                onClick={handleEditPost}
-                className="text-base-content/60 hover:text-primary cursor-pointer"
-                aria-label="Edit post"
+                onClick={isEditingPost ? handleSaveEdit : handleEditPost}
+                disabled={
+                  isEditPending || (isEditingPost && !editedContent.trim())
+                }
+                className="text-base-content/60 hover:text-primary cursor-pointer disabled:opacity-50"
+                aria-label={isEditingPost ? "Save post" : "Edit post"}
               >
-                Edit
+                {isEditingPost ? (
+                  <SendIcon className="h-4 w-4" />
+                ) : (
+                  <EditIcon className="h-4 w-4" />
+                )}
               </button>
-
               <button
                 type="button"
                 onClick={() => setShowDeletePostModal(true)}
@@ -308,9 +336,10 @@ function PostCard({ post }: PostCardProps) {
                   <CommentItem
                     key={postComment.id}
                     comment={postComment}
-                    postId={post.id}
                     currentUserId={currentUserId}
                     currentUserEmail={currentUserEmail}
+                    onEdit={handleEditComment}
+                    editingCommentId={editingCommentId}
                     onNavigate={
                       postComment.author?.id
                         ? () => navigate(`/profile/${postComment.author.id}`)
@@ -336,16 +365,16 @@ function PostCard({ post }: PostCardProps) {
                     className="border-base-300 text-base-content placeholder:text-base-content/50 h-25 min-w-0 flex-1 resize-none rounded-md border bg-transparent p-3 text-sm outline-none focus:outline-none"
                   />
                 </div>
-
                 <div className="mt-4 flex justify-end">
-                  <Button
-                    icon={<SendIcon />}
-                    disabled={isCommentDisabled}
-                    loading={isCommentPending}
+                  <button
+                    type="button"
                     onClick={handleComment}
+                    disabled={comment.trim().length < 5 || isCommentPending}
+                    className="text-base-content/50 hover:text-primary flex h-8 items-center gap-2 rounded-md px-3 disabled:opacity-50"
                   >
-                    Comment
-                  </Button>
+                    <SendIcon className="h-4 w-4" />
+                    <span>Comment</span>
+                  </button>
                 </div>
               </div>
             )}
@@ -374,29 +403,25 @@ function PostCard({ post }: PostCardProps) {
 
 type CommentItemProps = {
   comment: PostCardProps["post"]["comments"][number];
-  postId: string;
   currentUserId?: string;
   currentUserEmail?: string;
+  editingCommentId: string | null;
   onNavigate?: () => void;
   onDelete: (commentId: string) => void;
+  onEdit: (comment: CommentItemProps["comment"]) => void;
 };
 
 function CommentItem({
   comment,
-  postId,
   currentUserId,
   currentUserEmail,
+  editingCommentId,
   onNavigate,
   onDelete,
+  onEdit,
 }: CommentItemProps) {
   const [imageError, setImageError] = useState(false);
-  const [isEditingComment, setIsEditingComment] = useState(false);
-  const [editedCommentContent, setEditedCommentContent] = useState(
-    comment.content,
-  );
 
-  const { mutate: editComment, isPending: isEditCommentPending } =
-    useEditComment();
   const author = comment.author ?? {
     id: "",
     name: "Unknown user",
@@ -409,25 +434,6 @@ function CommentItem({
   const isCommentOwner =
     author.id === currentUserId || author.email === currentUserEmail;
   const isTemporaryComment = comment.id.startsWith("temp-");
-
-  function handleSaveEditComment() {
-    const trimmedContent = editedCommentContent.trim();
-
-    if (!trimmedContent) return;
-
-    editComment(
-      {
-        postId,
-        commentId: comment.id,
-        content: trimmedContent,
-      },
-      {
-        onSuccess: () => {
-          setIsEditingComment(false);
-        },
-      },
-    );
-  }
 
   return (
     <div className="flex items-start gap-3">
@@ -474,50 +480,26 @@ function CommentItem({
           </span>
         </div>
 
-        {isEditingComment ? (
-          <div className="mt-2">
-            <textarea
-              value={editedCommentContent}
-              onChange={(e) => setEditedCommentContent(e.target.value)}
-              className="border-base-300 text-base-content w-full resize-none rounded-md border bg-transparent p-2 text-sm outline-none"
-              rows={2}
-            />
-
-            <div className="mt-2 flex justify-end gap-2">
-              <Button
-                onClick={() => {
-                  setIsEditingComment(false);
-                  setEditedCommentContent(comment.content);
-                }}
-              >
-                Cancel
-              </Button>
-
-              <Button
-                onClick={handleSaveEditComment}
-                loading={isEditCommentPending}
-                disabled={!editedCommentContent.trim() || isEditCommentPending}
-              >
-                Save
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <p className="text-base-content/80 mt-1 text-sm break-words">
-            {comment.content}
-          </p>
-        )}
+        <p className="text-base-content/80 mt-1 text-sm break-words">
+          {comment.content}
+        </p>
       </div>
 
       {isCommentOwner && !isTemporaryComment && (
         <div className="flex shrink-0 items-center gap-1">
           <button
             type="button"
-            onClick={() => setIsEditingComment(true)}
-            className="text-base-content/50 hover:text-primary rounded-md px-2 text-xs"
-            aria-label="Edit comment"
+            onClick={() => onEdit(comment)}
+            className="text-base-content/50 hover:text-primary flex h-8 w-8 items-center justify-center rounded-md"
+            aria-label={
+              editingCommentId === comment.id ? "Save comment" : "Edit comment"
+            }
           >
-            Edit
+            {editingCommentId === comment.id ? (
+              <SendIcon className="h-4 w-4" />
+            ) : (
+              <EditIcon className="h-4 w-4" />
+            )}
           </button>
           <button
             type="button"

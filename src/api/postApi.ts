@@ -14,7 +14,6 @@ export const getAllPosts = async (): Promise<Post[]> => {
   return response.data.data;
 };
 
-
 export const createPost = async ({
   content,
   image,
@@ -77,7 +76,7 @@ export const editPost = async ({
   postId: string;
   content: string;
 }) => {
-  const response = await api.patch(`/api/posts/${postId}`, {
+  const response = await api.put(`/api/posts/${postId}`, {
     content,
   });
 
@@ -93,12 +92,9 @@ export const editComment = async ({
   commentId: string;
   content: string;
 }) => {
-  const response = await api.patch(
-    `/api/posts/${postId}/comment/${commentId}`,
-    {
-      content,
-    },
-  );
+  const response = await api.put(`/api/posts/${postId}/comment/${commentId}`, {
+    content,
+  });
 
   return response.data;
 };
