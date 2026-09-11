@@ -15,6 +15,7 @@ import {
 import { useSession } from "../../hooks/useSession";
 import { useSearchUsers } from "../../hooks/useSearchUsers";
 import { useState } from "react";
+import { getImageUrl } from "../../lib/getImageUrl";
 
 type HeaderProps = {
   theme: string;
@@ -84,16 +85,10 @@ function Header({ theme, toggleTheme }: HeaderProps) {
                         className="hover:bg-base-200 flex cursor-pointer items-center gap-3 p-3"
                         onClick={() => navigate(`/profile/${user.id}`)}
                       >
-                        <img
-                          src={user.image}
-                          alt={user.name}
-                          className="h-9 w-9 rounded-full object-cover"
-                        />
-
                         <div>
                           <p className="text-sm font-medium">{user.name}</p>
                           <p className="text-base-content/50 text-xs">
-                            @{user.username}
+                           @ {user.email}
                           </p>
                         </div>
                       </div>
