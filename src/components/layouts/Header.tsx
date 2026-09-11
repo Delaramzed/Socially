@@ -15,7 +15,7 @@ import {
 import { useSession } from "../../hooks/useSession";
 import { useSearchUsers } from "../../hooks/useSearchUsers";
 import { useState } from "react";
-import { getImageUrl } from "../../lib/getImageUrl";
+import { useEffect, useRef } from "react";
 
 type HeaderProps = {
   theme: string;
@@ -32,6 +32,7 @@ function Header({ theme, toggleTheme }: HeaderProps) {
   const [search, setSearch] = useState("");
 
   const { data: users, isLoading: isSearching } = useSearchUsers(search);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
@@ -46,6 +47,23 @@ function Header({ theme, toggleTheme }: HeaderProps) {
     });
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
+        setSearch("");
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <>
       <header className="border-base-300/50 bg-base-100/10 fixed top-0 right-0 left-0 z-50 hidden h-16 border-b backdrop-blur-xl md:block">
@@ -59,7 +77,7 @@ function Header({ theme, toggleTheme }: HeaderProps) {
             >
               Socially
             </Link>
-            <div className="relative w-64">
+            <div className="relative w-64" ref={searchRef}>
               <input
                 type="text"
                 placeholder="Search users..."
@@ -88,7 +106,7 @@ function Header({ theme, toggleTheme }: HeaderProps) {
                         <div>
                           <p className="text-sm font-medium">{user.name}</p>
                           <p className="text-base-content/50 text-xs">
-                           @ {user.email}
+                            @ {user.email}
                           </p>
                         </div>
                       </div>
