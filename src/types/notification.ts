@@ -3,7 +3,7 @@ export interface SocialNotification {
   avatarUrl: string;
   userId: string;
   username: string;
-  type: "comment" | "like" | "follow";
+  type: "COMMENT" | "LIKE" | "FOLLOW";
   postTitle?: string;
   comment?: string;
   createdAt: string;
