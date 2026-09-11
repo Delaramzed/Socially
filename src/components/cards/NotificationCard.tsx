@@ -2,8 +2,7 @@ import { ChatIcon, HeartIcon } from "../../assets/icons";
 import { UserRoundPlus } from "lucide-react";
 import type { SocialNotification } from "../../types/notification";
 import { Link } from "react-router-dom";
- import {TrashIcon} from "../../assets/icons"
-
+import { TrashIcon } from "../../assets/icons";
 
 interface NotificationCardProps {
   notification: SocialNotification;
@@ -14,21 +13,21 @@ interface NotificationCardProps {
 function NotificationCard(props: NotificationCardProps) {
   const notification = props.notification;
   const Icon =
-    notification.type === "like"
+    notification.type === "LIKE"
       ? HeartIcon
-      : notification.type === "follow"
+      : notification.type === "FOLLOW"
         ? UserRoundPlus
         : ChatIcon;
   const message =
-    notification.type === "like"
+    notification.type === "LIKE"
       ? "liked your post"
-      : notification.type === "follow"
+      : notification.type === "FOLLOW"
         ? "started following you"
         : "commented on your post";
   const iconColor =
-    notification.type === "like"
+    notification.type === "LIKE"
       ? "text-error"
-      : notification.type === "follow"
+      : notification.type === "FOLLOW"
         ? "text-success"
         : "text-primary";
   const backgroundColor = !notification.isRead
@@ -44,11 +43,17 @@ function NotificationCard(props: NotificationCardProps) {
         to={`/profile/${notification.userId}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <img
-          src={notification.avatarUrl}
-          alt={`${notification.username}'s avatar`}
-          className="h-10 w-10 shrink-0 cursor-pointer rounded-full object-cover"
-        />
+        {notification.avatarUrl ? (
+          <img
+            src={notification.avatarUrl}
+            alt={`${notification.username}'s avatar`}
+            className="h-10 w-10 shrink-0 cursor-pointer rounded-full object-cover"
+          />
+        ) : (
+          <div className="bg-primary text-primary-content flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-semibold">
+            {notification.username.charAt(0).toUpperCase()}
+          </div>
+        )}
       </Link>
       <div className="min-w-0 flex-1 pr-5">
         <p className="text-base-content flex items-center gap-2 text-sm">
@@ -78,22 +83,22 @@ function NotificationCard(props: NotificationCardProps) {
           {notification.createdAt}
         </p>
       </div>
-     <div className="absolute top-5 right-4 flex items-center gap-3">
-  {!notification.isRead && (
-    <span className="bg-primary h-2 w-2 rounded-full" />
-  )}
+      <div className="absolute top-5 right-4 flex items-center gap-3">
+        {!notification.isRead && (
+          <span className="bg-primary h-2 w-2 rounded-full" />
+        )}
 
-  <button
-    type="button"
-    onClick={(e) => {
-      e.stopPropagation();
-      props.onDelete?.();
-    }}
-    className="text-base-content/50 hover:text-error transition-colors"
-  >
-    <TrashIcon className="h-4 w-4" />
-  </button>
-</div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onDelete?.();
+          }}
+          className="text-base-content/50 hover:text-error transition-colors"
+        >
+          <TrashIcon className="h-4 w-4" />
+        </button>
+      </div>
     </section>
   );
 }
