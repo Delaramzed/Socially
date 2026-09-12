@@ -1,4 +1,12 @@
 @import "tailwindcss";
+
+@theme {
+  --font-mono: "ui-monospace", "SFMono-Regular", "Menlo", "Consolas", monospace;
+  --color-base-content-secondary: #737373;
+  --color-base-content-tertiary: #a6a6a6;
+  --color-base-content-opposite: #171717;
+}
+
 @plugin "daisyui" {
   themes:
     sociallylight --default,
@@ -13,6 +21,9 @@
   --color-base-200: #fafafa;
   --color-base-300: #e5e5e5;
   --color-base-content: #171717;
+  --color-base-content-tertiary: #a6a6a6;
+  --color-base-content-secondary: #737373;
+  --color-base-content-opposite: #171717;
 
   --color-primary: #3b82f6;
   --color-primary-content: #ffffff;
@@ -29,6 +40,9 @@
   --color-error: #ef4444;
   --color-error-content: #ffffff;
 
+  --color-success: #10b981;
+  --color-success-content: #ffffff;
+
   --radius-box: 12px;
   --radius-field: 6px;
   --radius-selector: 6px;
@@ -44,6 +58,9 @@
   --color-base-200: #171717;
   --color-base-300: #262626;
   --color-base-content: #fafafa;
+  --color-base-content-tertiary: #575757;
+  --color-base-content-secondary: #a3a3a3;
+  --color-base-content-opposite: #fafafa;
 
   --color-primary: #3b82f6;
   --color-primary-content: #ffffff;
@@ -60,6 +77,9 @@
   --color-error: #ef4444;
   --color-error-content: #ffffff;
 
+  --color-success: #10b981;
+  --color-success-content: #ffffff;
+
   --radius-box: 12px;
   --radius-field: 6px;
   --radius-selector: 6px;
@@ -73,4 +93,5 @@
 body {
   font-family: "Inter", sans-serif;
   margin: 0;
+  user-select: none;
 }
