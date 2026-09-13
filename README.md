@@ -1,32 +1,34 @@
-# React + TypeScript + Vite
+Socially
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A full-stack social media application built with React, TypeScript, Tailwind CSS, and Next.js. Users can create and interact with posts, manage profiles, follow users, and discover new people.
 
-Currently, two official plugins are available:
+Features
+Create, edit, and delete posts
+Like, comment, edit, and delete interactions
+User profiles with posts and likes
+Follow and unfollow users
+User search and recommendations
+Authentication and session management
+Responsive UI
+Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Frontend
 
-## React Compiler
+React 19
+TypeScript
+Vite
+Tailwind CSS
+TanStack Query
+Axios
+React Router
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Backend
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Next.js
+Prisma
+PostgreSQL
+Better Auth
+REST API
+Getting Started
+npm install
+npm run dev
