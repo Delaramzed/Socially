@@ -197,7 +197,7 @@ function Profile() {
       {followList === "following" && (
         <FollowListModal
           title="Following"
-          users={following.map((item) => item.following)}
+          users={following.map((item: { following: any }) => item.following)}
           isLoading={isFollowingLoading}
           onClose={() => setFollowList(null)}
         />

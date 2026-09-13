@@ -58,8 +58,7 @@ function PostCard({ post }: PostCardProps) {
   const { mutate: deletePost, isPending: isDeletePending } = useDeletePost();
 
   const { mutate: editPost, isPending: isEditPending } = useEditPost();
-  const { mutate: editComment, isPending: isEditCommentPending } =
-    useEditComment();
+ const { mutate: editComment } = useEditComment();
 
   const { mutate: deleteComment, isPending: isDeleteCommentPending } =
     useDeleteComment();

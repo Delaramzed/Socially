@@ -25,7 +25,7 @@ export const updateUserProfile = async (id: string, data: Partial<user>) => {
   return response.data;
 };
 
-export const searchUsers = async (search: string) => {
+export const searchUsers = async (search: string) :  Promise<user[]>=> {
   const response = await api.get(`/api/users/search?q=${search}`);
 
   return response.data.data;
